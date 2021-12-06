@@ -108,9 +108,11 @@ export default function App() {
           I am Vivian. Connect your Ethereum wallet and wave at me!
         </div>
 
-        <button className="waveButton" onClick={wave}>
-          Wave at Me
-        </button>
+        {currentAccount && (
+          <button className="waveButton" onClick={wave}>
+            Wave at Me
+          </button>
+        )}
 
         {/*
          * If there is no currentAccount render this button
