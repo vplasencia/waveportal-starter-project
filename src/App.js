@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import "./App.css";
+import "./styles/output.css";
 import abi from "./utils/WavePortal.json";
 
 export default function App() {
@@ -100,16 +101,24 @@ export default function App() {
   }, []);
 
   return (
-    <div className="mainContainer">
-      <div className="dataContainer">
-        <div className="header">👋 Hey there!</div>
+    <div className="flex place-content-center px-2">
+      <div className="mt-5">
+        <div className="text-gray-800 text-3xl font-semibold text-center">
+          <span role="img" aria-label="wave">
+            👋
+          </span>
+          <span>Hey there!</span>
+        </div>
 
-        <div className="bio">
+        <div className="text-gray-600 text-center my-5">
           I am Vivian. Connect your Ethereum wallet and wave at me!
         </div>
 
         {currentAccount && (
-          <button className="waveButton" onClick={wave}>
+          <button
+            className="w-full text-white px-3 py-3 bg-blue-600 hover:bg-blue-700 rounded-md"
+            onClick={wave}
+          >
             Wave at Me
           </button>
         )}
@@ -118,7 +127,10 @@ export default function App() {
          * If there is no currentAccount render this button
          */}
         {!currentAccount && (
-          <button className="waveButton" onClick={connectWallet}>
+          <button
+            className="w-full text-white px-3 py-3 bg-blue-600 hover:bg-blue-700 rounded-md"
+            onClick={connectWallet}
+          >
             Connect Wallet
           </button>
         )}
