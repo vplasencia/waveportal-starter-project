@@ -15,7 +15,7 @@ export default function App() {
   /**
    * Create a variable here that holds the contract address after you deploy!
    */
-  const contractAddress = "0x9B69c7557409D1Ca4ae5fda870a3d0c445D34A0a";
+  const contractAddress = "0xb97ade93dF52E79D21FF7A7fC41D792C03aa92dC";
   const contractABI = abi.abi;
 
   /*
@@ -133,6 +133,7 @@ export default function App() {
          * Execute the actual wave from your smart contract
          */
         let message = document.getElementById("message").value;
+        console.log("message", message);
         const waveTxn = await wavePortalContract.wave(message);
         console.log("Mining...", waveTxn.hash);
 
