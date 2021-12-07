@@ -134,7 +134,9 @@ export default function App() {
          */
         let message = document.getElementById("message").value;
         console.log("message", message);
-        const waveTxn = await wavePortalContract.wave(message, { gasLimit: 300000 });
+        const waveTxn = await wavePortalContract.wave(message, {
+          gasLimit: 300000,
+        });
         console.log("Mining...", waveTxn.hash);
 
         await waveTxn.wait();
@@ -152,6 +154,38 @@ export default function App() {
 
   useEffect(() => {
     checkIfWalletIsConnected();
+
+    let wavePortalContract;
+
+    const onNewWave = (from, timestamp, message) => {
+      console.log("NewWave", from, timestamp, message);
+      setAllWaves((prevState) => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(timestamp * 1000),
+          message: message,
+        },
+      ]);
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      wavePortalContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      wavePortalContract.on("NewWave", onNewWave);
+    }
+
+    return () => {
+      if (wavePortalContract) {
+        wavePortalContract.off("NewWave", onNewWave);
+      }
+    };
   }, []);
 
   return (
@@ -214,7 +248,9 @@ export default function App() {
 
         {currentAccount && (
           <div className="grid place-items-center gap-3 my-10">
-            <div className="text-gray-700 font-medium text-xl">All waves ({allWaves.length}):</div>
+            <div className="text-gray-700 font-medium text-xl">
+              All waves ({allWaves.length}):
+            </div>
             {allWaves.map((wave, index) => {
               return (
                 <div
