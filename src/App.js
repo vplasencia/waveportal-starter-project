@@ -7,11 +7,62 @@ import abi from "./utils/WavePortal.json";
 export default function App() {
   const [currentAccount, setCurrentAccount] = useState("");
 
+  /*
+   * All state property to store all waves
+   */
+  const [allWaves, setAllWaves] = useState([]);
+
   /**
    * Create a variable here that holds the contract address after you deploy!
    */
-  const contractAddress = "0xEc92aB58f2685831cabCA9EA9358F30453fF102F";
+  const contractAddress = "0x9B69c7557409D1Ca4ae5fda870a3d0c445D34A0a";
   const contractABI = abi.abi;
+
+  /*
+   * Create a method that gets all waves from your contract
+   */
+  const getAllWaves = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        /*
+         * Call the getAllWaves method from your Smart Contract
+         */
+        const waves = await wavePortalContract.getAllWaves();
+
+        /*
+         * We only need address, timestamp, and message in our UI so let's
+         * pick those out
+         */
+        let wavesCleaned = [];
+        waves.forEach((wave) => {
+          wavesCleaned.push({
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: wave.message,
+          });
+        });
+
+        /*
+         * Store our data in React State
+         */
+        setAllWaves(wavesCleaned);
+        console.log("all waves", wavesCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -30,6 +81,7 @@ export default function App() {
         const account = accounts[0];
         console.log("Found an authorized account:", account);
         setCurrentAccount(account);
+        getAllWaves();
       } else {
         console.log("No authorized account found");
       }
@@ -80,7 +132,8 @@ export default function App() {
         /*
          * Execute the actual wave from your smart contract
          */
-        const waveTxn = await wavePortalContract.wave();
+        let message = document.getElementById("message").value;
+        const waveTxn = await wavePortalContract.wave(message);
         console.log("Mining...", waveTxn.hash);
 
         await waveTxn.wait();
@@ -110,17 +163,40 @@ export default function App() {
           <span>Hey there!</span>
         </div>
 
-        <div className="text-gray-600 text-center my-5">
+        <div className="text-gray-700 text-center my-5">
           I am Vivian. Connect your Ethereum wallet and wave at me!
         </div>
 
         {currentAccount && (
-          <button
-            className="w-full text-white px-3 py-3 bg-blue-600 hover:bg-blue-700 rounded-md"
-            onClick={wave}
-          >
-            Wave at Me
-          </button>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label htmlFor="message" className="text-gray-700">
+                Message:
+              </label>
+              <textarea
+                name="message"
+                id="message"
+                cols="30"
+                className="
+            h-40
+            p-3
+            w-full
+            border-blue-500 border-2
+            rounded-md
+            focus:outline-none
+            focus:border-blue-600
+            text-gray-700
+          "
+              ></textarea>
+            </div>
+
+            <button
+              className="w-full text-white px-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-md"
+              onClick={wave}
+            >
+              Wave at Me
+            </button>
+          </div>
         )}
 
         {/*
@@ -128,11 +204,38 @@ export default function App() {
          */}
         {!currentAccount && (
           <button
-            className="w-full text-white px-3 py-3 bg-blue-600 hover:bg-blue-700 rounded-md"
+            className="w-full text-white px-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-md"
             onClick={connectWallet}
           >
             Connect Wallet
           </button>
+        )}
+
+        {currentAccount && (
+          <div className="grid place-items-center gap-3 my-10">
+            <div className="text-gray-700 font-medium text-xl">All waves ({allWaves.length}):</div>
+            {allWaves.map((wave, index) => {
+              return (
+                <div
+                  key={index}
+                  className="bg-blue-100 text-gray-700 p-2 rounded-md"
+                >
+                  <div className="space-x-1">
+                    <span className="font-medium">Address:</span>
+                    <span>{wave.address}</span>{" "}
+                  </div>
+                  <div className="space-x-1">
+                    <span className="font-medium">Time:</span>
+                    <span>{wave.timestamp.toString()}</span>{" "}
+                  </div>
+                  <div className="space-x-1">
+                    <span className="font-medium">Message:</span>{" "}
+                    <span>{wave.message}</span>{" "}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
